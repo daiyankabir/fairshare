@@ -1,0 +1,41 @@
+{
+  "name": "@fairshare/shared",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./algorithms": {
+      "types": "./dist/lib/algorithms/index.d.ts",
+      "default": "./dist/lib/algorithms/index.js"
+    },
+    "./models": {
+      "types": "./dist/lib/models/index.d.ts",
+      "default": "./dist/lib/models/index.js"
+    },
+    "./utils": {
+      "types": "./dist/lib/utils/index.d.ts",
+      "default": "./dist/lib/utils/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc --project tsconfig.lib.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint src --ext .ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "decimal.js": "^10.4.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.0",
+    "fast-check": "^3.17.0",
+    "typescript": "~5.6.0",
+    "vitest": "^2.0.0"
+  }
+}

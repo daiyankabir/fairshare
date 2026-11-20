@@ -1,0 +1,256 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("TEST_DATABASE_URL")
+}
+
+model User {
+  id              String   @id @default(cuid())
+  email           String   @unique
+  passwordHash    String
+  name            String
+  defaultCurrency String   @default("USD")
+  avatarColor     String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  memberships        Membership[]
+  createdExpenses    Expense[]      @relation("ExpenseCreator")
+  paidExpenses       ExpensePayer[] @relation("ExpensePayerUser")
+  splits             ExpenseSplit[] @relation("ExpenseSplitUser")
+  settlementsFrom    Settlement[]   @relation("SettlementFromUser")
+  settlementsTo      Settlement[]   @relation("SettlementToUser")
+  activityLogs       ActivityLog[]  @relation("ActivityLogChangedBy")
+  createdSettlements Settlement[]   @relation("SettlementCreatedBy")
+  usedInviteTokens   InviteToken[]  @relation("InviteTokenUsedBy")
+  inviteTokens       InviteToken[]  @relation("InviteTokenCreator")
+  savedFilters       SavedFilter[]
+
+  @@index([email])
+}
+
+model Group {
+  id              String   @id @default(cuid())
+  name            String
+  defaultCurrency String   @default("USD")
+  coverEmoji      String?
+  isArchived      Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  memberships  Membership[]
+  expenses     Expense[]
+  categories   Category[]
+  settlements  Settlement[]
+  inviteTokens InviteToken[]
+  savedFilters SavedFilter[]
+  activityLogs ActivityLog[]
+
+  @@index([isArchived])
+}
+
+model Membership {
+  id              String   @id @default(cuid())
+  groupId         String
+  group           Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  userId          String?
+  user            User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  displayName     String
+  role            String   @default("MEMBER")
+  isGuest         Boolean  @default(false)
+  joinedAt        DateTime @default(now())
+  defaultCurrency String?
+
+  paidExpenses    ExpensePayer[]
+  splits          ExpenseSplit[]
+  settlementsFrom Settlement[]   @relation("SettlementFromMember")
+  settlementsTo   Settlement[]   @relation("SettlementToMember")
+
+  @@unique([groupId, userId])
+  @@index([groupId])
+  @@index([userId])
+}
+
+model Expense {
+  id             String                @id @default(cuid())
+  groupId        String
+  group          Group                 @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  description    String
+  amount         Int // Minor units
+  currency       String
+  exchangeRateId String?
+  exchangeRate   ExchangeRateSnapshot? @relation(fields: [exchangeRateId], references: [id])
+  date           DateTime
+  categoryId     String?
+  category       Category?             @relation(fields: [categoryId], references: [id])
+  payerIdsJson   String    @default("[]") // JSON array as string for SQLite
+  notes          String?
+  receiptUrl     String?
+  createdById    String
+  createdBy      User                  @relation("ExpenseCreator", fields: [createdById], references: [id])
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+  version        Int                   @default(1)
+
+  payers       ExpensePayer[]
+  splits       ExpenseSplit[]
+  items        ExpenseItem[]
+  activityLogs ActivityLog[]  @relation("ExpenseActivityLogs")
+
+  @@index([groupId, date])
+  @@index([groupId, categoryId])
+  @@index([createdById])
+}
+
+model ExpensePayer {
+  id        String     @id @default(cuid())
+  expenseId String
+  expense   Expense    @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  memberId  String
+  member    Membership @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  userId    String?
+  user      User?      @relation("ExpensePayerUser", fields: [userId], references: [id], onDelete: SetNull)
+  amount    Int // Minor units
+
+  @@unique([expenseId, memberId])
+}
+
+model ExpenseSplit {
+  id         String     @id @default(cuid())
+  expenseId  String
+  expense    Expense    @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  memberId   String
+  member     Membership @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  userId     String?
+  user       User?      @relation("ExpenseSplitUser", fields: [userId], references: [id], onDelete: SetNull)
+  amount     Int // Minor units
+  percentage Float?
+  shares     Int?
+
+  @@unique([expenseId, memberId])
+  @@index([expenseId])
+  @@index([memberId])
+}
+
+model ExpenseItem {
+  id          String   @id @default(cuid())
+  expenseId   String
+  expense     Expense  @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  description String
+  amount      Int // Minor units
+  currency    String
+  assignedToJson String @default("[]") // JSON array as string for SQLite
+
+  @@index([expenseId])
+}
+
+model Settlement {
+  id           String     @id @default(cuid())
+  groupId      String
+  group        Group      @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  fromMemberId String
+  fromMember   Membership @relation("SettlementFromMember", fields: [fromMemberId], references: [id], onDelete: Cascade)
+  toMemberId   String
+  toMember     Membership @relation("SettlementToMember", fields: [toMemberId], references: [id], onDelete: Cascade)
+  userFromId   String?
+  userFrom     User?      @relation("SettlementFromUser", fields: [userFromId], references: [id], onDelete: SetNull)
+  userToId     String?
+  userTo       User?      @relation("SettlementToUser", fields: [userToId], references: [id], onDelete: SetNull)
+  amount       Int // Minor units
+  currency     String
+  date         DateTime   @default(now())
+  note         String?
+  createdById  String
+  createdBy    User       @relation("SettlementCreatedBy", fields: [createdById], references: [id])
+  createdAt    DateTime   @default(now())
+
+  @@index([groupId, date])
+  @@index([fromMemberId])
+  @@index([toMemberId])
+  @@index([userFromId])
+  @@index([userToId])
+  @@index([createdById])
+}
+
+model Category {
+  id        String  @id @default(cuid())
+  groupId   String?
+  group     Group?  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  name      String
+  icon      String?
+  color     String?
+  isDefault Boolean @default(false)
+
+  expenses Expense[]
+
+  @@unique([groupId, name])
+  @@index([groupId])
+}
+
+model SavedFilter {
+  id        String   @id @default(cuid())
+  groupId   String
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  filtersJson String @default("{}") // JSON as string for SQLite
+  createdAt DateTime @default(now())
+
+  @@index([groupId])
+  @@index([userId])
+}
+
+model ActivityLog {
+  id          String   @id @default(cuid())
+  groupId     String
+  group       Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  expenseId   String?
+  expense     Expense? @relation("ExpenseActivityLogs", fields: [expenseId], references: [id], onDelete: Cascade)
+  entityType  String // expense, settlement, group, member
+  entityId    String
+  action      String // created, updated, deleted
+  changedById String
+  changedBy   User     @relation("ActivityLogChangedBy", fields: [changedById], references: [id])
+  changesJson String @default("{}") // JSON as string for SQLite
+  timestamp   DateTime @default(now())
+
+  @@index([groupId, timestamp])
+  @@index([entityType, entityId])
+  @@index([expenseId])
+}
+
+model InviteToken {
+  token       String    @id @default(cuid())
+  groupId     String
+  group       Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  role        String    @default("MEMBER")
+  expiresAt   DateTime?
+  createdById String
+  createdBy   User      @relation("InviteTokenCreator", fields: [createdById], references: [id])
+  createdAt   DateTime  @default(now())
+  usedAt      DateTime?
+  usedById    String?
+  usedBy      User?     @relation("InviteTokenUsedBy", fields: [usedById], references: [id])
+
+  @@index([groupId])
+  @@index([expiresAt])
+}
+
+model ExchangeRateSnapshot {
+  id        String   @id @default(cuid())
+  from      String
+  to        String
+  rate      Float
+  source    String // api, manual
+  date      DateTime
+  fetchedAt DateTime @default(now())
+
+  expenses Expense[]
+
+  @@unique([from, to, date])
+  @@index([from, to])
+}

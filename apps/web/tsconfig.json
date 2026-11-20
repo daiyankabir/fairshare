@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "../../dist/apps/web",
+    "declaration": false,
+    "composite": false,
+    "types": ["node", "jest"],
+    "lib": ["ES2023", "dom"],
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "experimentalDecorators": true
+  },
+  "files": ["src/main.ts"],
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "../../libs/shared/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
+}

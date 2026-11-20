@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "outDir": "../../dist/apps/web",
+    "target": "ES2023",
+    "lib": ["ES2023", "dom"],
+    "module": "commonjs",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "types": ["jest", "node"],
+    "useDefineForClassFields": false
+  },
+  "angularCompilerOptions": {
+    "strictTemplates": true,
+    "strictInjectionParameters": true,
+    "enableControlFlowAnalysis": true,
+    "skipTemplateCodegen": true
+  },
+  "include": ["src/app/**/*.spec.ts"],
+  "exclude": ["node_modules", "dist"]
+}
