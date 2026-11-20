@@ -15,7 +15,7 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 
 const CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF', 'CNY', 'INR', 'BRL'];
-const EMOJIS = ['🏠', '✈️', '🍕', '🍻', '🎮', '🎓', '💼', '🏖️', '🎂', '🎄', '🏔️', '🏝️', '🚗', '🛒', '💰', '📱'];
+const ICONS = ['groups', 'flight', 'restaurant', 'local_bar', 'sports_esports', 'school', 'work', 'beach_access', 'cake', 'ac_unit', 'terrain', 'island', 'directions_car', 'shopping_cart', 'attach_money', 'smartphone'];
 
 @Component({
   selector: 'app-group-form',
@@ -32,26 +32,26 @@ const EMOJIS = ['🏠', '✈️', '🍕', '🍻', '🎮', '🎓', '💼', '🏖�
     MatProgressSpinnerModule
   ],
   template: `
-    <div class="form-container">
+    <div class="form-page">
       <mat-card class="form-card">
         <mat-card-header>
-          <mat-card-title>{{ isEditing() ? 'Edit Group' : 'Create Group' }}</mat-card-title>
+          <mat-card-title>{{ isEditing() ? 'Edit group' : 'Create group' }}</mat-card-title>
           <mat-card-subtitle>{{ isEditing() ? 'Update group details' : 'Start splitting expenses with friends' }}</mat-card-subtitle>
         </mat-card-header>
-        
+
         <mat-card-content>
           <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form">
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Group Name</mat-label>
+              <mat-label>Group name</mat-label>
               <input matInput formControlName="name" autocomplete="off" maxlength="100" />
               <mat-icon matPrefix>group</mat-icon>
               @if (form.get('name')?.hasError('required') && form.get('name')?.touched) {
                 <mat-error>Group name is required</mat-error>
               }
             </mat-form-field>
-            
+
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Default Currency</mat-label>
+              <mat-label>Default currency</mat-label>
               <mat-select formControlName="defaultCurrency">
                 @for (currency of currencies; track currency) {
                   <mat-option [value]="currency">{{ currency }}</mat-option>
@@ -59,33 +59,29 @@ const EMOJIS = ['🏠', '✈️', '🍕', '🍻', '🎮', '🎓', '💼', '🏖�
               </mat-select>
               <mat-icon matPrefix>attach_money</mat-icon>
             </mat-form-field>
-            
+
             <div class="field">
-              <label>Cover Emoji (optional)</label>
-              <div class="emoji-picker" role="group" aria-label="Select cover emoji">
-                @for (emoji of emojis; track emoji) {
+              <label>Cover icon (optional)</label>
+              <div class="icon-picker" role="group" aria-label="Select cover icon">
+                @for (icon of icons; track icon) {
                   <button
                     type="button"
-                    class="emoji-btn"
-                    [class.selected]="form.get('coverEmoji')?.value === emoji"
-                    (click)="form.get('coverEmoji')?.setValue(form.get('coverEmoji')?.value === emoji ? '' : emoji)"
-                    [attr.aria-pressed]="form.get('coverEmoji')?.value === emoji"
+                    class="icon-btn"
+                    [class.selected]="form.get('coverIcon')?.value === icon"
+                    (click)="form.get('coverIcon')?.setValue(form.get('coverIcon')?.value === icon ? '' : icon)"
+                    [attr.aria-pressed]="form.get('coverIcon')?.value === icon"
                   >
-                    {{ emoji }}
+                    <mat-icon>{{ icon }}</mat-icon>
                   </button>
                 }
-                <input type="text" formControlName="coverEmoji" class="hidden-input" aria-hidden="true" />
+                <input type="text" formControlName="coverIcon" class="hidden-input" aria-hidden="true" />
               </div>
             </div>
-            
+
             <div class="form-actions">
               <button mat-button type="button" routerLink="/groups">Cancel</button>
               <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || submitting()">
-                @if (submitting()) {
-                  <mat-spinner diameter="20"></mat-spinner>
-                } @else {
-                  {{ isEditing() ? 'Save Changes' : 'Create Group' }}
-                }
+                @if (submitting()) { <mat-spinner diameter="20"></mat-spinner> } @else { {{ isEditing() ? 'Save changes' : 'Create group' }} }
               </button>
             </div>
           </form>
@@ -94,78 +90,90 @@ const EMOJIS = ['🏠', '✈️', '🍕', '🍻', '🎮', '🎓', '💼', '🏖�
     </div>
   `,
   styles: [`
-    .form-container {
+    .form-page {
       display: flex;
       align-items: flex-start;
       justify-content: center;
       min-height: 100vh;
-      padding: 48px 24px;
+      padding: var(--space-8) var(--space-4);
     }
-    
+
     .form-card {
       width: 100%;
-      max-width: 500px;
+      max-width: 520px;
+      box-shadow: none;
+      border: 1px solid var(--border-hairline);
     }
-    
+
     .form {
       display: flex;
       flex-direction: column;
-      gap: 20px;
-      margin-top: 8px;
+      gap: var(--space-5);
+      margin-top: var(--space-2);
     }
-    
+
     .full-width { width: 100%; }
-    
+
     .field {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: var(--space-2);
     }
-    
+
     .field label {
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 500;
-      color: var(--mat-sys-on-surface-variant);
+      color: var(--text-secondary);
     }
-    
-    .emoji-picker {
+
+    .icon-picker {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: var(--space-2);
     }
-    
-    .emoji-btn {
+
+    .icon-btn {
       width: 48px;
       height: 48px;
-      border: 2px solid var(--mat-sys-outline-variant);
-      border-radius: 12px;
-      background: var(--mat-sys-surface-container-low);
-      font-size: 24px;
+      border: 1px solid var(--border-hairline);
+      border-radius: var(--radius-md);
+      background: var(--bg-raised);
+      font-size: 22px;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: border-color 160ms, background 160ms;
       display: flex;
       align-items: center;
       justify-content: center;
+      color: var(--text-secondary);
+
+      &:hover {
+        border-color: var(--accent);
+        background: var(--bg-card);
+      }
+
+      &.selected {
+        border-color: var(--accent);
+        background: var(--accent-container);
+        color: var(--accent-on-container);
+      }
     }
-    
-    .emoji-btn:hover {
-      border-color: var(--mat-sys-primary);
-      transform: scale(1.05);
-    }
-    
-    .emoji-btn.selected {
-      border-color: var(--mat-sys-primary);
-      background: var(--mat-sys-primary-container);
-    }
-    
+
     .hidden-input { display: none; }
-    
+
     .form-actions {
       display: flex;
       justify-content: flex-end;
-      gap: 12px;
-      margin-top: 8px;
-      padding-top: 8px;
+      gap: var(--space-3);
+      margin-top: var(--space-3);
+      padding-top: var(--space-4);
+      border-top: 1px solid var(--border-hairline);
+    }
+
+    @media (max-width: 599px) {
+      .form-page { padding: var(--space-6) var(--space-3); align-items: stretch; }
+      .form-card { max-width: none; }
+      .form-actions { flex-direction: column-reverse; }
+      .form-actions button { width: 100%; }
     }
   `]
 })
@@ -175,19 +183,19 @@ export class GroupFormComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly http = inject(HttpClient);
   private readonly snackBar = inject(MatSnackBar);
-  
+
   readonly currencies = CURRENCIES;
-  readonly emojis = EMOJIS;
+  readonly icons = ICONS;
   readonly submitting = signal(false);
   readonly isEditing = signal(false);
   readonly groupId = signal<string | null>(null);
-  
+
   readonly form = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.minLength(1), Validators.maxLength(100)]],
     defaultCurrency: ['USD', [Validators.required]],
-    coverEmoji: ['']
+    coverIcon: ['']
   });
-  
+
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
@@ -196,7 +204,7 @@ export class GroupFormComponent implements OnInit {
       this.loadGroup(id);
     }
   }
-  
+
   async loadGroup(id: string): Promise<void> {
     try {
       const group = await this.http.get<any>(`${environment.apiUrl}/groups/${id}`).toPromise();
@@ -204,7 +212,7 @@ export class GroupFormComponent implements OnInit {
         this.form.patchValue({
           name: group.name,
           defaultCurrency: group.defaultCurrency,
-          coverEmoji: group.coverEmoji || ''
+          coverIcon: group.coverEmoji || ''
         });
       }
     } catch (err) {
@@ -212,14 +220,14 @@ export class GroupFormComponent implements OnInit {
       this.router.navigate(['/groups']);
     }
   }
-  
+
   async onSubmit(): Promise<void> {
     if (this.form.invalid) return;
-    
+
     this.submitting.set(true);
     try {
       const data = this.form.getRawValue();
-      
+
       if (this.isEditing() && this.groupId()) {
         await this.http.patch(`${environment.apiUrl}/groups/${this.groupId()}`, data).toPromise();
         this.snackBar.open('Group updated', 'Dismiss', { duration: 3000 });

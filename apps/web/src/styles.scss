@@ -2,55 +2,388 @@
 
 @include mat.core();
 
-// Import a pre-built Angular Material theme
-@import '@angular/material/prebuilt-themes/indigo-pink.css';
+// ──────────────────────────────────────────────────────────────
+// CSS Custom Properties — Theme Tokens
+// ──────────────────────────────────────────────────────────────
 
-// Custom CSS custom properties for theming
 :root {
+  /* Brand / Accent */
   --app-primary: #1976d2;
   --app-accent: #f57c00;
   --app-warn: #d32f2f;
+
+  /* Spacing scale (4px grid) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+  --space-32: 128px;
+
+  /* Radius scale */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+
+  /* Neutral ramp (Graphite, warm-tinted for "paper ledger" world) */
+  /* Light theme (default) */
+  --bg-page: #fafafa;
+  --bg-card: #ffffff;
+  --bg-raised: #f4f4f5;
+  --bg-input: #f4f4f5;
+  --border-hairline: rgba(23, 23, 23, 0.08);
+  --text-primary: #171717;
+  --text-secondary: #525252;
+  --text-muted: #737373;
+  --text-inverse: #ffffff;
+
+  /* Semantic */
+  --success: #16a34a;
+  --error: #dc2626;
+  --warning: #ca8a04;
+
+  /* Accent (warm amber) */
+  --accent: #c45800;
+  --accent-hover: #a04700;
+  --accent-container: #fff3e0;
+  --accent-on-container: #7c3a00;
+
+  /* Focus */
+  --focus-ring: #1976d2;
+
+  /* Shadow */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --shadow-overlay: 0 16px 48px rgba(0, 0, 0, 0.16);
+}
+
+/* Dark theme — activated via [data-theme="dark"] on <html> */
+[data-theme="dark"] {
+  --bg-page: #141415;
+  --bg-card: #19191b;
+  --bg-raised: #232325;
+  --bg-input: #232325;
+  --border-hairline: rgba(237, 237, 237, 0.08);
+  --text-primary: #ededed;
+  --text-secondary: #a1a1a6;
+  --text-muted: #85858b;
+  --text-inverse: #171717;
+  --accent: #ffb74d;
+  --accent-hover: #ffa726;
+  --accent-container: #4e342e;
+  --accent-on-container: #ffcc80;
+  --focus-ring: #64b5f6;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --shadow-overlay: 0 16px 48px rgba(0, 0, 0, 0.5);
+}
+
+/* Light theme — explicit (overrides default if needed) */
+[data-theme="light"] {
+  --bg-page: #fafafa;
+  --bg-card: #ffffff;
+  --bg-raised: #f4f4f5;
+  --bg-input: #f4f4f5;
+  --border-hairline: rgba(23, 23, 23, 0.08);
+  --text-primary: #171717;
+  --text-secondary: #525252;
+  --text-muted: #737373;
+  --text-inverse: #ffffff;
+  --accent: #c45800;
+  --accent-hover: #a04700;
+  --accent-container: #fff3e0;
+  --accent-on-container: #7c3a00;
+  --focus-ring: #1976d2;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --shadow-overlay: 0 16px 48px rgba(0, 0, 0, 0.16);
+}
+
+/* ──────────────────────────────────────────────────────────────
+   Global Resets
+   ────────────────────────────────────────────────────────────── */
+
+*, *::before, *::after {
+  box-sizing: border-box;
 }
 
 html, body {
   height: 100%;
   margin: 0;
   font-family: 'Inter', system-ui, sans-serif;
-  background-color: var(--mat-sys-surface-container-lowest);
-  color: var(--mat-sys-on-surface);
+  background-color: var(--bg-page);
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
-* {
-  box-sizing: border-box;
+/* Prevent horizontal overflow */
+img, video, table, svg {
+  max-width: 100%;
+  height: auto;
 }
 
+/* Table wrapper for horizontal scroll on mobile */
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: calc(var(--space-4) * -1) calc(var(--space-6) * -1);
+  padding: var(--space-4) var(--space-6);
+}
+
+.table-wrapper table {
+  min-width: 640px;
+}
+
+/* Selection */
+::selection {
+  background-color: var(--accent-container);
+  color: var(--accent-on-container);
+}
+
+/* Focus visible */
 :focus-visible {
-  outline: 2px solid var(--mat-sys-primary);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
 }
 
-::selection {
-  background-color: var(--mat-sys-primary-container);
-  color: var(--mat-sys-on-primary-container);
-}
-
+/* App root */
 app-root {
   display: block;
   height: 100%;
   min-height: 100vh;
 }
 
+/* ──────────────────────────────────────────────────────────────
+   Material Component Overrides — Core
+   ────────────────────────────────────────────────────────────── */
+
 .mat-mdc-dialog-container {
-  border-radius: 16px;
+  border-radius: var(--radius-xl);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-overlay);
 }
 
 .mat-mdc-snack-bar-container {
-  border-radius: 8px;
+  border-radius: var(--radius-md);
+  background: var(--bg-raised);
+  border: 1px solid var(--border-hairline);
 }
 
 .mat-mdc-bottom-sheet-container {
-  border-radius: 16px 16px 0 0;
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  background: var(--bg-card);
 }
+
+.mat-mdc-text-field-wrapper {
+  background-color: var(--bg-input);
+  border-radius: var(--radius-md);
+}
+
+.mat-mdc-form-field-subscript-wrapper {
+  min-height: 0;
+}
+
+.mat-mdc-chip-set {
+  gap: var(--space-2);
+}
+
+.mat-mdc-chip {
+  border-radius: var(--radius-sm);
+  height: 32px;
+}
+
+/* Menu panel — used by mat-menu, mat-select dropdown */
+.mat-mdc-menu-panel,
+.mat-mdc-select-panel {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-hairline);
+  background: var(--bg-card);
+  padding: var(--space-2);
+}
+
+/* Menu item */
+.mat-mdc-menu-item {
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+}
+
+.mat-mdc-menu-item:hover {
+  background: var(--bg-raised);
+}
+
+.mat-mdc-menu-item .mat-icon {
+  color: var(--text-muted);
+}
+
+/* Select panel specific */
+.mat-mdc-select-panel {
+  max-height: 320px;
+  overflow-y: auto;
+  min-width: 200px;
+}
+
+/* Select option */
+.mat-mdc-option {
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+}
+
+.mat-mdc-option:hover,
+.mat-mdc-option.mat-active {
+  background: var(--bg-raised);
+}
+
+.mat-mdc-option.mat-selected {
+  background: var(--accent-container);
+  color: var(--accent-on-container);
+}
+
+.mat-mdc-option .mat-icon {
+  color: var(--text-muted);
+}
+
+.mat-mdc-option.mat-selected .mat-icon {
+  color: var(--accent);
+}
+
+/* Scrollbar for select panel */
+.mat-mdc-select-panel::-webkit-scrollbar {
+  width: 6px;
+}
+
+.mat-mdc-select-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.mat-mdc-select-panel::-webkit-scrollbar-thumb {
+  background: var(--border-hairline);
+  border-radius: 3px;
+}
+
+.mat-mdc-select-panel::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+.mat-mdc-button-base {
+  border-radius: var(--radius-md);
+  text-transform: none;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  height: 40px;
+  padding: 0 var(--space-4);
+}
+
+.mat-mdc-fab, .mat-mdc-mini-fab {
+  border-radius: 50%;
+}
+
+.mat-mdc-card {
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-hairline);
+  background: var(--bg-card);
+}
+
+.mat-mdc-expansion-panel {
+  border-radius: var(--radius-lg) !important;
+  border: 1px solid var(--border-hairline) !important;
+  margin-bottom: var(--space-3);
+  background: var(--bg-card);
+}
+
+.mat-mdc-expansion-panel-header {
+  height: 48px;
+}
+
+.mat-mdc-tab-header {
+  border-bottom: 1px solid var(--border-hairline);
+}
+
+.mat-mdc-tab-label {
+  font-weight: 500;
+  font-size: 14px;
+  text-transform: none;
+}
+
+.mat-mdc-tab-indicator {
+  height: 2px;
+  background: var(--accent);
+}
+
+/* Tooltip */
+.mat-mdc-tooltip {
+  background: var(--text-primary) !important;
+  color: var(--text-inverse) !important;
+  border-radius: var(--radius-sm) !important;
+  font-size: 12px !important;
+  padding: var(--space-2) var(--space-3) !important;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   CDK Overlay Container — Global Styles for all overlays
+   ────────────────────────────────────────────────────────────── */
+
+.cdk-overlay-pane {
+  /* Ensure overlays inherit theme background for nested content */
+  background: transparent;
+}
+
+.cdk-overlay-connected-position-bounding-box {
+  max-height: none; /* Let the panel handle its own max-height */
+}
+
+/* ──────────────────────────────────────────────────────────────
+   Global Scrollbar (for .custom-scrollbar and general use)
+   ────────────────────────────────────────────────────────────── */
+
+.custom-scrollbar::-webkit-scrollbar,
+.mat-mdc-select-panel::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track,
+.mat-mdc-select-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb,
+.mat-mdc-select-panel::-webkit-scrollbar-thumb {
+  background: var(--border-hairline);
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover,
+.mat-mdc-select-panel::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Firefox */
+.custom-scrollbar,
+.mat-mdc-select-panel {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-hairline) transparent;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   Loading Overlay
+   ────────────────────────────────────────────────────────────── */
 
 .loading-overlay {
   position: fixed;
@@ -63,96 +396,117 @@ app-root {
   backdrop-filter: blur(2px);
 }
 
+/* ──────────────────────────────────────────────────────────────
+   Empty State
+   ────────────────────────────────────────────────────────────── */
+
 .empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 48px 24px;
+  padding: var(--space-16) var(--space-6);
   text-align: center;
-  color: var(--mat-sys-on-surface-variant);
-  
+  color: var(--text-muted);
+  gap: var(--space-4);
+
   mat-icon {
-    font-size: 64px;
-    width: 64px;
-    height: 64px;
-    margin-bottom: 16px;
-    opacity: 0.5;
+    font-size: 56px;
+    width: 56px;
+    height: 56px;
+    opacity: 0.4;
   }
-  
+
   h3 {
-    margin: 0 0 8px;
-    color: var(--mat-sys-on-surface);
+    margin: 0;
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text-primary);
   }
-  
+
   p {
     margin: 0;
-    max-width: 300px;
+    max-width: 280px;
+    font-size: 14px;
+    line-height: 1.5;
   }
 }
+
+/* ──────────────────────────────────────────────────────────────
+   Sync Indicator
+   ────────────────────────────────────────────────────────────── */
 
 .sync-indicator {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: 20px;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: 999px;
   font-size: 12px;
   font-weight: 500;
-  
+  line-height: 1;
+
   &.online {
-    background: var(--mat-sys-secondary-container);
-    color: var(--mat-sys-on-secondary-container);
+    background: var(--accent-container);
+    color: var(--accent-on-container);
   }
-  
+
   &.offline {
-    background: var(--mat-sys-tertiary-container);
-    color: var(--mat-sys-on-tertiary-container);
+    background: var(--bg-raised);
+    color: var(--text-muted);
   }
-  
+
   &.syncing {
-    background: var(--mat-sys-primary-container);
-    color: var(--mat-sys-on-primary-container);
+    background: var(--app-primary);
+    color: var(--text-inverse);
   }
-  
+
   mat-icon {
-    font-size: 16px;
-    width: 16px;
-    height: 16px;
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
   }
 }
+
+/* ──────────────────────────────────────────────────────────────
+   Currency Badge
+   ────────────────────────────────────────────────────────────── */
 
 .currency-badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 2px 8px;
-  border-radius: 12px;
-  background: var(--mat-sys-surface-container-high);
-  color: var(--mat-sys-on-surface-variant);
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--bg-raised);
+  color: var(--text-secondary);
   font-size: 12px;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
 }
 
-.amount-positive {
-  color: var(--mat-sys-tertiary);
-}
+/* ──────────────────────────────────────────────────────────────
+   Amount Colors
+   ────────────────────────────────────────────────────────────── */
 
-.amount-negative {
-  color: var(--mat-sys-error);
-}
+.amount-positive { color: var(--success); }
+.amount-negative { color: var(--error); }
+.amount-neutral { color: var(--text-primary); }
 
-.amount-neutral {
-  color: var(--mat-sys-on-surface);
-}
+/* ──────────────────────────────────────────────────────────────
+   Virtual Scroll
+   ────────────────────────────────────────────────────────────── */
 
 .virtual-scroll-item {
-  min-height: 72px;
+  min-height: 64px;
 }
 
+/* ──────────────────────────────────────────────────────────────
+   Animations
+   ────────────────────────────────────────────────────────────── */
+
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-8px); }
+  from { opacity: 0; transform: translateY(-4px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
@@ -161,13 +515,28 @@ app-root {
   to { transform: translateX(0); }
 }
 
-.animate-fade-in {
-  animation: fadeIn 0.2s ease-out;
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
-.animate-slide-in {
-  animation: slideIn 0.3s ease-out;
+.animate-fade-in { animation: fadeIn 160ms cubic-bezier(0.22, 1, 0.36, 1); }
+.animate-slide-in { animation: slideIn 220ms cubic-bezier(0.22, 1, 0.36, 1); }
+
+/* ──────────────────────────────────────────────────────────────
+   Skeleton Loader
+   ────────────────────────────────────────────────────────────── */
+
+.skeleton {
+  background: linear-gradient(90deg, var(--bg-raised) 25%, var(--bg-input) 50%, var(--bg-raised) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-sm);
 }
+
+/* ──────────────────────────────────────────────────────────────
+   Mobile Bottom Nav
+   ────────────────────────────────────────────────────────────── */
 
 @media (max-width: 599px) {
   .mobile-bottom-nav {
@@ -178,109 +547,130 @@ app-root {
     z-index: 100;
     display: flex;
     justify-content: space-around;
-    padding: 8px 0;
-    background: var(--mat-sys-surface-container);
-    border-top: 1px solid var(--mat-sys-outline-variant);
-    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+    padding: var(--space-2) 0;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border-hairline);
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.08);
   }
-  
+
   .mobile-bottom-nav button {
     flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
-    padding: 8px;
+    gap: var(--space-1);
+    padding: var(--space-2);
     background: transparent;
     border: none;
-    color: var(--mat-sys-on-surface-variant);
+    color: var(--text-muted);
     font-size: 11px;
     font-weight: 500;
-    
-    &.active {
-      color: var(--mat-sys-primary);
-    }
-    
+    line-height: 1;
+
+    &.active { color: var(--accent); }
+
     mat-icon {
-      font-size: 24px;
-      width: 24px;
-      height: 24px;
+      font-size: 22px;
+      width: 22px;
+      height: 22px;
     }
   }
-  
-  .has-bottom-nav {
-    padding-bottom: 80px;
-  }
+
+  .has-bottom-nav { padding-bottom: 88px; }
 }
 
 @media (min-width: 600px) {
-  .mobile-bottom-nav {
-    display: none;
+  .mobile-bottom-nav { display: none; }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   Auth Page Background — subtle paper texture
+   ────────────────────────────────────────────────────────────── */
+
+.auth-page {
+  min-height: 100vh;
+  position: relative;
+  z-index: 1;
+  background-color: var(--bg-page);
+
+  &::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image:
+      linear-gradient(45deg, transparent 49.5%, var(--border-hairline) 49.5%, var(--border-hairline) 50.5%, transparent 50.5%),
+      linear-gradient(-45deg, transparent 49.5%, var(--border-hairline) 49.5%, var(--border-hairline) 50.5%, transparent 50.5%);
+    background-size: 64px 64px;
+    opacity: 0.5;
+  }
+
+  &::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    opacity: 0.015;
   }
 }
 
-.mat-mdc-text-field-wrapper {
-  background-color: var(--mat-sys-surface-container-low);
+/* ──────────────────────────────────────────────────────────────
+   Main App Pages Background — very subtle ledger grid
+   ────────────────────────────────────────────────────────────── */
+
+.app-page {
+  min-height: 100vh;
+  position: relative;
+  background-color: var(--bg-page);
+
+  &::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(90deg, var(--border-hairline) 1px, transparent 1px),
+      linear-gradient(180deg, var(--border-hairline) 1px, transparent 1px);
+    background-size: 48px 48px;
+    opacity: 0.4;
+  }
 }
 
-.mat-mdc-form-field-subscript-wrapper {
-  min-height: 0;
-}
+/* ──────────────────────────────────────────────────────────────
+   Theme Toggle Button (reusable)
+   ────────────────────────────────────────────────────────────── */
 
-.mat-mdc-chip-set {
-  gap: 8px;
-}
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-md);
+  background: var(--bg-raised);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 160ms, border-color 160ms, color 160ms;
 
-.mat-mdc-chip {
-  border-radius: 20px;
-  height: 32px;
-}
+  &:hover {
+    background: var(--bg-input);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
 
-.mat-mdc-menu-panel {
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-}
+  &:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
 
-.mat-mdc-button-base {
-  border-radius: 8px;
-  text-transform: none;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-}
-
-.mat-mdc-fab, .mat-mdc-mini-fab {
-  border-radius: 50%;
-}
-
-.mat-mdc-card {
-  border-radius: 16px;
-  border: 1px solid var(--mat-sys-outline-variant);
-}
-
-.mat-mdc-expansion-panel {
-  border-radius: 12px !important;
-  border: 1px solid var(--mat-sys-outline-variant) !important;
-  margin-bottom: 8px;
-}
-
-.mat-mdc-expansion-panel-header {
-  height: 56px;
-}
-
-.custom-scrollbar::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: var(--mat-sys-outline-variant);
-  border-radius: 4px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: var(--mat-sys-outline);
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
 }

@@ -80,13 +80,13 @@ interface ItemForm {
     MatDividerModule,
   ],
   template: `
-    <div class="form-container">
+    <div class="form-page">
       <mat-card class="form-card">
         <mat-card-header>
-          <mat-card-title>{{ isEditing() ? 'Edit Expense' : 'Add Expense' }}</mat-card-title>
+          <mat-card-title>{{ isEditing() ? 'Edit expense' : 'Add expense' }}</mat-card-title>
           <mat-card-subtitle>{{ isEditing() ? 'Update expense details' : 'Create a new expense to split' }}</mat-card-subtitle>
         </mat-card-header>
-        
+
         <mat-card-content>
           <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form">
             <!-- Basic Fields -->
@@ -94,62 +94,74 @@ interface ItemForm {
               <mat-label>Description</mat-label>
               <input matInput formControlName="description" autocomplete="off" maxlength="200" />
               <mat-icon matPrefix>description</mat-icon>
-              <mat-error *ngIf="form.get('description')?.hasError('required') && form.get('description')?.touched">Description is required</mat-error>
-              <mat-error *ngIf="form.get('description')?.hasError('maxlength') && form.get('description')?.touched">Maximum 200 characters</mat-error>
+              @if (form.get('description')?.hasError('required') && form.get('description')?.touched) {
+                <mat-error>Description is required</mat-error>
+              }
+              @if (form.get('description')?.hasError('maxlength') && form.get('description')?.touched) {
+                <mat-error>Maximum 200 characters</mat-error>
+              }
             </mat-form-field>
-            
+
             <div class="row">
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Amount</mat-label>
                 <input matInput type="number" formControlName="amount" step="0.01" min="0.01" />
                 <mat-icon matPrefix>attach_money</mat-icon>
-                <mat-error *ngIf="form.get('amount')?.hasError('required') && form.get('amount')?.touched">Amount is required</mat-error>
-                <mat-error *ngIf="form.get('amount')?.hasError('min') && form.get('amount')?.touched">Amount must be greater than 0</mat-error>
+                @if (form.get('amount')?.hasError('required') && form.get('amount')?.touched) {
+                  <mat-error>Amount is required</mat-error>
+                }
+                @if (form.get('amount')?.hasError('min') && form.get('amount')?.touched) {
+                  <mat-error>Must be greater than 0</mat-error>
+                }
               </mat-form-field>
-              
+
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Currency</mat-label>
                 <mat-select formControlName="currency">
-                  <mat-option *ngFor="let c of currencies" [value]="c">{{ c }}</mat-option>
+                  @for (c of currencies; track c) { <mat-option [value]="c">{{ c }}</mat-option> }
                 </mat-select>
                 <mat-icon matPrefix>currency_exchange</mat-icon>
               </mat-form-field>
             </div>
-            
+
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Date</mat-label>
               <input matInput [matDatepicker]="picker" formControlName="date" />
               <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
               <mat-datepicker #picker></mat-datepicker>
-              <mat-error *ngIf="form.get('date')?.hasError('required') && form.get('date')?.touched">Date is required</mat-error>
+              @if (form.get('date')?.hasError('required') && form.get('date')?.touched) {
+                <mat-error>Date is required</mat-error>
+              }
             </mat-form-field>
-            
+
             <!-- Split Type Selection -->
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Split Type</mat-label>
+              <mat-label>Split type</mat-label>
               <mat-select formControlName="splitType" (selectionChange)="onSplitTypeChange($event.value)">
-                <mat-option *ngFor="let type of splitTypes" [value]="type">{{ splitTypeLabels[type] }}</mat-option>
+                @for (type of splitTypes; track type) {
+                  <mat-option [value]="type">{{ splitTypeLabels[type] }}</mat-option>
+                }
               </mat-select>
               <mat-icon matPrefix>call_split</mat-icon>
               <mat-hint>{{ splitTypeHints[splitType()] }}</mat-hint>
             </mat-form-field>
-            
-            <mat-divider class="split-divider"></mat-divider>
-            
+
+            <mat-divider class="section-divider"></mat-divider>
+
             <!-- Dynamic Split Configuration -->
             <div *ngIf="splitType() === 'equal'" class="split-section">
-              <h3>Equal Split</h3>
+              <h3>Equal split</h3>
               <p class="section-hint">Amount will be divided equally among all {{ members().length }} participants</p>
               <div class="preview">
                 <mat-icon>info</mat-icon>
                 <span>Each person pays {{ (previewAmount() / members().length / (getCurrencyDecimals(currency()) ? 100 : 1)) | number:'1.2-2' }} {{ currency() }}</span>
               </div>
             </div>
-            
+
             <div *ngIf="splitType() === 'percentage'" class="split-section">
-              <h3>Percentage Split</h3>
+              <h3>Percentage split</h3>
               <p class="section-hint">Assign percentage to each participant (must total 100%)</p>
-              
+
               <div *ngFor="let member of members(); trackBy: trackByMemberId">
                 <mat-form-field appearance="outline" class="full-width">
                   <mat-label>{{ member.displayName }}</mat-label>
@@ -157,17 +169,17 @@ interface ItemForm {
                   <span matSuffix>%</span>
                 </mat-form-field>
               </div>
-              
-              <div class="percentage-total" [class.error]="totalPercent() !== 100">
+
+              <div class="validation-summary" [class.error]="totalPercent() !== 100">
                 <mat-icon>{{ totalPercent() === 100 ? 'check_circle' : 'error' }}</mat-icon>
                 <span>Total: {{ totalPercent() }}%</span>
               </div>
             </div>
-            
+
             <div *ngIf="splitType() === 'shares'" class="split-section">
-              <h3>Shares Split</h3>
-              <p class="section-hint">Assign shares to each participant (e.g., 2 shares = 2x portion)</p>
-              
+              <h3>Shares split</h3>
+              <p class="section-hint">Assign shares to each participant (e.g., 2 shares = 2× portion)</p>
+
               <div *ngFor="let member of members(); trackBy: trackByMemberId">
                 <mat-form-field appearance="outline" class="full-width">
                   <mat-label>{{ member.displayName }}</mat-label>
@@ -175,17 +187,17 @@ interface ItemForm {
                   <span matSuffix>shares</span>
                 </mat-form-field>
               </div>
-              
+
               <div class="preview">
                 <mat-icon>info</mat-icon>
                 <span>Total shares: {{ totalShares() }}. Each share = {{ (previewAmount() / totalShares() / (getCurrencyDecimals(currency()) ? 100 : 1)) | number:'1.2-2' }} {{ currency() }}</span>
               </div>
             </div>
-            
+
             <div *ngIf="splitType() === 'exact'" class="split-section">
-              <h3>Exact Amount Split</h3>
+              <h3>Exact amounts</h3>
               <p class="section-hint">Enter exact amount each participant owes (must total the expense amount)</p>
-              
+
               <div *ngFor="let member of members(); trackBy: trackByMemberId">
                 <mat-form-field appearance="outline" class="full-width">
                   <mat-label>{{ member.displayName }}</mat-label>
@@ -193,55 +205,57 @@ interface ItemForm {
                   <span matPrefix>{{ currency() }}&nbsp;</span>
                 </mat-form-field>
               </div>
-              
-              <div class="exact-total" [class.error]="totalExactAmount() !== previewAmount()">
+
+              <div class="validation-summary" [class.error]="totalExactAmount() !== previewAmount()">
                 <mat-icon>{{ totalExactAmount() === previewAmount() ? 'check_circle' : 'error' }}</mat-icon>
                 <span>Total: {{ fromMinorUnits(totalExactAmount(), currency()) | number:'1.2-2' }} / {{ fromMinorUnits(previewAmount(), currency()) | number:'1.2-2' }} {{ currency() }}</span>
               </div>
             </div>
-            
+
             <div *ngIf="splitType() === 'itemized'" class="split-section">
               <div class="section-header">
-                <h3>Itemized Split</h3>
-                <button mat-icon-button (click)="addItem()" matTooltip="Add Item">
+                <h3>Itemized split</h3>
+                <button mat-icon-button (click)="addItem()" matTooltip="Add item">
                   <mat-icon>add</mat-icon>
                 </button>
               </div>
               <p class="section-hint">Add individual items and assign them to participants</p>
-              
+
               <div *ngFor="let item of itemsForm.controls; let i = index; trackBy: trackByIndex" class="item-row" [formGroup]="item">
                 <mat-divider></mat-divider>
                 <div class="item-header">
                   <h4>Item {{ i + 1 }}</h4>
-                  <button mat-icon-button (click)="removeItem(i)" color="warn" matTooltip="Remove Item">
+                  <button mat-icon-button (click)="removeItem(i)" color="warn" matTooltip="Remove item">
                     <mat-icon>delete</mat-icon>
                   </button>
                 </div>
-                
+
                 <mat-form-field appearance="outline" class="full-width">
-                  <mat-label>Item Description</mat-label>
+                  <mat-label>Item description</mat-label>
                   <input matInput formControlName="description" />
-                  <mat-error *ngIf="item.get('description')?.hasError('required') && item.get('description')?.touched">Description is required</mat-error>
+                  @if (item.get('description')?.hasError('required') && item.get('description')?.touched) {
+                    <mat-error>Description is required</mat-error>
+                  }
                 </mat-form-field>
-                
+
                 <div class="row">
                   <mat-form-field appearance="outline" class="half-width">
                     <mat-label>Amount</mat-label>
                     <input matInput type="number" formControlName="amount" min="0.01" step="0.01" />
-                    <mat-error *ngIf="item.get('amount')?.hasError('required') && item.get('amount')?.touched">Required</mat-error>
-                    <mat-error *ngIf="item.get('amount')?.hasError('min') && item.get('amount')?.touched">Must be > 0</mat-error>
+                    @if (item.get('amount')?.hasError('required') && item.get('amount')?.touched) { <mat-error>Required</mat-error> }
+                    @if (item.get('amount')?.hasError('min') && item.get('amount')?.touched) { <mat-error>Must be > 0</mat-error> }
                   </mat-form-field>
-                  
+
                   <mat-form-field appearance="outline" class="half-width">
                     <mat-label>Currency</mat-label>
                     <mat-select formControlName="currency">
-                      <mat-option *ngFor="let c of currencies" [value]="c">{{ c }}</mat-option>
+                      @for (c of currencies; track c) { <mat-option [value]="c">{{ c }}</mat-option> }
                     </mat-select>
                   </mat-form-field>
                 </div>
-                
+
                 <div class="section">
-                  <h4>Assigned To</h4>
+                  <h4>Assigned to</h4>
                   <div class="payer-chips">
                     <div *ngFor="let member of members(); trackBy: trackByMemberId">
                       <mat-chip
@@ -257,28 +271,28 @@ interface ItemForm {
                   <input type="hidden" formControlName="assignedTo" [value]="getAssignedToValue(item)" />
                 </div>
               </div>
-              
-              <div class="item-summary" [class.error]="itemsTotal() > previewAmount()">
+
+              <div class="validation-summary" [class.error]="itemsTotal() > previewAmount()">
                 <mat-icon>{{ itemsTotal() <= previewAmount() ? 'check_circle' : 'error' }}</mat-icon>
                 <span>
-                  Items Total: {{ itemsTotal() | number:'1.2-2' }} / {{ fromMinorUnits(previewAmount(), currency()) | number:'1.2-2' }} {{ currency() }}
+                  Items total: {{ itemsTotal() | number:'1.2-2' }} / {{ fromMinorUnits(previewAmount(), currency()) | number:'1.2-2' }} {{ currency() }}
                   <span *ngIf="itemsTotal() < previewAmount()"> ({{ fromMinorUnits(previewAmount() - itemsTotal(), currency()) | number:'1.2-2' }} remaining)</span>
                 </span>
               </div>
-              
+
               <button mat-stroked-button (click)="addItem()">
                 <mat-icon>add</mat-icon>
-                Add Item
+                Add item
               </button>
             </div>
-            
+
             <div *ngIf="!isSplitTypeSelected()" class="placeholder">Select a split type</div>
-            
-            <mat-divider class="split-divider"></mat-divider>
-            
+
+            <mat-divider class="section-divider"></mat-divider>
+
             <!-- Payer Selection -->
             <div class="section">
-              <h3>Who Paid?</h3>
+              <h3>Who paid?</h3>
               <p class="section-hint">Select who paid for this expense (can be multiple people)</p>
               <div class="payer-chips">
                 <div *ngFor="let member of members(); trackBy: trackByMemberId">
@@ -296,33 +310,32 @@ interface ItemForm {
               </div>
               <input type="hidden" formControlName="payerIds" [value]="getPayerIdsString()" />
             </div>
-            
+
             <mat-divider></mat-divider>
-            
+
             <!-- Optional Fields -->
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Category (optional)</mat-label>
               <input matInput formControlName="category" autocomplete="off" />
               <mat-icon matPrefix>category</mat-icon>
             </mat-form-field>
-            
+
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Notes (optional)</mat-label>
               <textarea matInput formControlName="notes" rows="3"></textarea>
               <mat-icon matPrefix>note</mat-icon>
             </mat-form-field>
-            
+
             <!-- Validation Preview -->
             <div *ngIf="splitValidationMessage() as msg" class="validation-message" [class.error]="!isValidSplit()" [class.success]="isValidSplit()">
               <mat-icon>{{ isValidSplit() ? 'check_circle' : 'error' }}</mat-icon>
               <span>{{ msg }}</span>
             </div>
-            
+
             <div class="form-actions">
               <button mat-button type="button" routerLink="../">Cancel</button>
               <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || submitting() || !isValidSplit()">
-                <mat-spinner *ngIf="submitting()" diameter="20"></mat-spinner>
-                <span *ngIf="!submitting()">{{ isEditing() ? 'Save Changes' : 'Create Expense' }}</span>
+                @if (submitting()) { <mat-spinner diameter="20"></mat-spinner> } @else { {{ isEditing() ? 'Save changes' : 'Create expense' }} }
               </button>
             </div>
           </form>
@@ -331,44 +344,110 @@ interface ItemForm {
     </div>
   `,
   styles: [`
-    .form-container { display: flex; align-items: flex-start; justify-content: center; min-height: 100vh; padding: 48px 24px; }
-    .form-card { width: 100%; max-width: 700px; }
-    .form { display: flex; flex-direction: column; gap: 20px; margin-top: 8px; }
-    .full-width { width: 100%; }
-    .row { display: flex; gap: 16px; }
-    .half-width { flex: 1; }
-    .form-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 8px; padding-top: 8px; }
-    .split-divider { margin: 16px 0; }
-    .section { display: flex; flex-direction: column; gap: 12px; }
-    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-    .section-header h3 { margin: 0; }
-    .section-hint { font-size: 13px; color: var(--mat-sys-on-surface-variant); margin: 0 0 8px; }
-    .payer-chips { display: flex; flex-wrap: wrap; gap: 8px; }
-    .placeholder { padding: 24px; text-align: center; color: var(--mat-sys-on-surface-variant); }
-    .validation-message {
-      display: flex; align-items: center; gap: 8px;
-      padding: 12px; border-radius: 8px;
-      font-size: 14px;
+    .form-page {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      min-height: 100vh;
+      padding: var(--space-8) var(--space-4);
     }
-    .validation-message.error { background: var(--mat-sys-error-container); color: var(--mat-sys-on-error-container); }
-    .validation-message.success { background: var(--mat-sys-secondary-container); color: var(--mat-sys-on-secondary-container); }
-    .split-section { display: flex; flex-direction: column; gap: 12px; }
-    .split-section h3 { margin: 0 0 4px; font-size: 16px; font-weight: 500; }
-    .preview { display: flex; align-items: center; gap: 8px; padding: 12px; background: var(--mat-sys-secondary-container); border-radius: 8px; color: var(--mat-sys-on-secondary-container); }
-    .percentage-total { display: flex; align-items: center; gap: 8px; padding: 12px; border-radius: 8px; font-weight: 500; }
-    .percentage-total.error { background: var(--mat-sys-error-container); color: var(--mat-sys-on-error-container); }
-    .percentage-total:not(.error) { background: var(--mat-sys-secondary-container); color: var(--mat-sys-on-secondary-container); }
-    .exact-total { display: flex; align-items: center; gap: 8px; padding: 12px; border-radius: 8px; font-weight: 500; }
-    .exact-total.error { background: var(--mat-sys-error-container); color: var(--mat-sys-on-error-container); }
-    .exact-total:not(.error) { background: var(--mat-sys-secondary-container); color: var(--mat-sys-on-secondary-container); }
-    .item-row { padding: 16px 0; }
-    .item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+
+    .form-card {
+      width: 100%;
+      max-width: 720px;
+      box-shadow: none;
+      border: 1px solid var(--border-hairline);
+    }
+
+    .form {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-5);
+      margin-top: var(--space-2);
+    }
+
+    .full-width { width: 100%; }
+
+    .row { display: flex; gap: var(--space-4); }
+    .half-width { flex: 1; }
+
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: var(--space-3);
+      margin-top: var(--space-3);
+      padding-top: var(--space-4);
+      border-top: 1px solid var(--border-hairline);
+    }
+
+    .section-divider { margin: var(--space-4) 0; }
+
+    .section { display: flex; flex-direction: column; gap: var(--space-3); }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-2);
+    }
+
+    .section-header h3 { margin: 0; font-size: 15px; font-weight: 500; }
+
+    .section-hint {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin: 0 0 var(--space-3);
+      line-height: 1.5;
+    }
+
+    .payer-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+
+    .placeholder { padding: var(--space-8); text-align: center; color: var(--text-muted); }
+
+    .validation-message {
+      display: flex; align-items: center; gap: var(--space-2);
+      padding: var(--space-3); border-radius: var(--radius-md);
+      font-size: 13px;
+    }
+    .validation-message.error { background: var(--error); color: var(--text-inverse); }
+    .validation-message.success { background: var(--success); color: var(--text-inverse); }
+
+    .split-section { display: flex; flex-direction: column; gap: var(--space-3); }
+    .split-section h3 { margin: 0 0 var(--space-1); font-size: 15px; font-weight: 500; }
+
+    .preview {
+      display: flex; align-items: center; gap: var(--space-2);
+      padding: var(--space-3); border-radius: var(--radius-md);
+      background: var(--accent-container); color: var(--accent-on-container);
+      font-size: 13px;
+    }
+
+    .validation-summary {
+      display: flex; align-items: center; gap: var(--space-2);
+      padding: var(--space-3); border-radius: var(--radius-md);
+      font-weight: 500; font-size: 13px;
+    }
+    .validation-summary.error { background: var(--error); color: var(--text-inverse); }
+    .validation-summary:not(.error) { background: var(--success); color: var(--text-inverse); }
+
+    .item-row { padding: var(--space-4) 0; }
+    .item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-3); }
     .item-header h4 { margin: 0; font-size: 14px; font-weight: 500; }
-    .section { margin-top: 12px; }
-    .section h4 { margin: 0 0 8px; font-size: 13px; font-weight: 500; color: var(--mat-sys-on-surface-variant); }
-    .item-summary { display: flex; align-items: center; gap: 8px; padding: 12px; border-radius: 8px; font-weight: 500; margin-top: 12px; }
-    .item-summary.error { background: var(--mat-sys-error-container); color: var(--mat-sys-on-error-container); }
-    .item-summary:not(.error) { background: var(--mat-sys-secondary-container); color: var(--mat-sys-on-secondary-container); }
+
+    .section { margin-top: var(--space-3); }
+    .section h4 { margin: 0 0 var(--space-2); font-size: 12px; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+
+    .payer-chips .mat-mdc-chip { height: 36px; }
+
+    @media (max-width: 599px) {
+      .form-page { padding: var(--space-6) var(--space-3); align-items: stretch; }
+      .form-card { max-width: none; }
+      .row { flex-direction: column; gap: var(--space-3); }
+      .half-width { width: 100%; }
+      .form { gap: var(--space-4); }
+      .form-actions { flex-direction: column-reverse; }
+      .form-actions button { width: 100%; }
+    }
   `]
 })
 export class ExpenseFormComponent implements OnInit {
@@ -377,39 +456,39 @@ export class ExpenseFormComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly http = inject(HttpClient);
   private readonly snackBar = inject(MatSnackBar);
-  
+
   readonly currencies = CURRENCIES;
   readonly splitTypes = SPLIT_TYPES;
   readonly splitTypeLabels: Record<SplitType, string> = {
     equal: 'Equal',
     percentage: 'Percentage',
     shares: 'Shares',
-    exact: 'Exact Amounts',
+    exact: 'Exact amounts',
     itemized: 'Itemized',
   };
   readonly splitTypeHints: Record<SplitType, string> = {
     equal: 'Split equally among all participants',
     percentage: 'Assign a percentage to each participant (must total 100%)',
-    shares: 'Assign shares to each participant (e.g., 2 shares = 2x portion)',
+    shares: 'Assign shares to each participant (e.g., 2 shares = 2× portion)',
     exact: 'Enter exact amount each participant owes',
     itemized: 'Add individual items and assign them to participants',
   };
-  
+
   submitting = signal(false);
   isEditing = signal(false);
   groupId = signal<string>('');
   expenseId = signal<string | null>(null);
   members = signal<Member[]>([]);
-  
+
   // Payer selection
   payerControl = this.fb.control<string[]>([]);
-  
+
   // Split configuration forms
   percentageForm = this.fb.group({});
   sharesForm = this.fb.group({});
   exactForm = this.fb.group({});
   itemsForm = this.fb.array<FormGroup>([]);
-  
+
   // Main form
   form = this.fb.nonNullable.group({
     description: ['', [Validators.required, Validators.maxLength(200)]],
@@ -421,23 +500,22 @@ export class ExpenseFormComponent implements OnInit {
     notes: [''],
     payerIds: [[] as string[]],
   });
-  
+
   // Computed values
   splitType = computed(() => this.form.get('splitType')?.value as SplitType);
   previewAmount = computed(() => toMinorUnits(this.form.get('amount')?.value || 0, this.form.get('currency')?.value || 'USD'));
   previewCurrency = computed(() => this.form.get('currency')?.value || 'USD');
-  
+
   isValidSplit = computed(() => {
     const type = this.splitType();
     const amountMinor = this.previewAmount();
     const currency = this.previewCurrency();
     const mems = this.members();
-    
+
     if (mems.length === 0) return false;
-    
+
     switch (type) {
-      case 'equal':
-        return true;
+      case 'equal': return true;
       case 'percentage': {
         const values = Object.values(this.percentageForm.value) as number[];
         const sum = values.reduce((acc: number, v: number) => acc + (v || 0), 0);
@@ -459,42 +537,33 @@ export class ExpenseFormComponent implements OnInit {
         const formAmount = this.form.get('amount')?.value || 0;
         return Math.abs(totalItems - formAmount) < 0.01;
       }
-      default:
-        return false;
+      default: return false;
     }
   });
-  
+
   splitValidationMessage = computed(() => {
     const type = this.splitType();
-    const amountMinor = this.previewAmount();
-    const currency = this.previewCurrency();
     const mems = this.members();
-    
-    if (mems.length === 0) {
-      return 'No group members available';
-    }
-    
+
+    if (mems.length === 0) return 'No group members available';
+
     if (!this.isValidSplit()) {
       switch (type) {
-        case 'percentage':
-          return 'Percentages must sum to 100% and all members must have a value';
-        case 'shares':
-          return 'All members must have at least 1 share';
+        case 'percentage': return 'Percentages must sum to 100% and all members must have a value';
+        case 'shares': return 'All members must have at least 1 share';
         case 'exact': {
           const values = Object.values(this.exactForm.value) as number[];
           const sum = values.reduce((acc: number, v: number) => acc + (v || 0), 0);
           const target = this.form.get('amount')?.value || 0;
           return `Exact amounts must sum to ${target} (currently ${sum})`;
         }
-        case 'itemized':
-          return 'Add items that sum to the total amount';
-        default:
-          return 'Invalid split configuration';
+        case 'itemized': return 'Add items that sum to the total amount';
+        default: return 'Invalid split configuration';
       }
     }
     return 'Split configuration is valid';
   });
-  
+
   ngOnInit(): void {
     this.groupId.set(this.route.snapshot.paramMap.get('groupId') || '');
     const id = this.route.snapshot.paramMap.get('id');
@@ -505,7 +574,7 @@ export class ExpenseFormComponent implements OnInit {
     }
     this.loadMembers();
   }
-  
+
   async loadMembers(): Promise<void> {
     try {
       const response = await this.http.get<{ groups: any[] }>(`${environment.apiUrl}/groups/${this.groupId()}`).toPromise();
@@ -518,14 +587,13 @@ export class ExpenseFormComponent implements OnInit {
             userId: m.user?.id || null,
           }));
         this.members.set(mems);
-        // Default to all members as payers
         this.payerControl.setValue(mems.map(m => m.id));
       }
     } catch (err) {
       console.error('Failed to load members', err);
     }
   }
-  
+
   async loadExpense(id: string): Promise<void> {
     try {
       const expense = await this.http.get<any>(`${environment.apiUrl}/groups/${this.groupId()}/expenses/${id}`).toPromise();
@@ -541,22 +609,13 @@ export class ExpenseFormComponent implements OnInit {
           payerIds: expense.payerIds,
         });
         this.payerControl.setValue(expense.payerIds || []);
-        
-        // Load split configuration
+
         const members = this.members();
         switch (expense.splitType) {
-          case 'percentage':
-            this.patchPercentageForm(expense.splits);
-            break;
-          case 'shares':
-            this.patchSharesForm(expense.splits);
-            break;
-          case 'exact':
-            this.patchExactForm(expense.splits);
-            break;
-          case 'itemized':
-            this.patchItemsForm(expense.items);
-            break;
+          case 'percentage': this.patchPercentageForm(expense.splits); break;
+          case 'shares': this.patchSharesForm(expense.splits); break;
+          case 'exact': this.patchExactForm(expense.splits); break;
+          case 'itemized': this.patchItemsForm(expense.items); break;
         }
       }
     } catch (err) {
@@ -565,7 +624,7 @@ export class ExpenseFormComponent implements OnInit {
       this.router.navigate(['../'], { relativeTo: this.route });
     }
   }
-  
+
   private patchPercentageForm(splits: any[]): void {
     const group = this.fb.group({});
     for (const member of this.members()) {
@@ -574,7 +633,7 @@ export class ExpenseFormComponent implements OnInit {
     }
     this.percentageForm = group;
   }
-  
+
   private patchSharesForm(splits: any[]): void {
     const group = this.fb.group({});
     for (const member of this.members()) {
@@ -583,7 +642,7 @@ export class ExpenseFormComponent implements OnInit {
     }
     this.sharesForm = group;
   }
-  
+
   private patchExactForm(splits: any[]): void {
     const group = this.fb.group({});
     for (const member of this.members()) {
@@ -592,7 +651,7 @@ export class ExpenseFormComponent implements OnInit {
     }
     this.exactForm = group;
   }
-  
+
   private patchItemsForm(items: any[]): void {
     this.itemsForm.clear();
     for (const item of items) {
@@ -605,11 +664,11 @@ export class ExpenseFormComponent implements OnInit {
       }));
     }
   }
-  
+
   onSplitTypeChange(type: SplitType): void {
     const members = this.members();
     if (members.length === 0) return;
-    
+
     switch (type) {
       case 'percentage': {
         const group = this.fb.group({});
@@ -641,46 +700,43 @@ export class ExpenseFormComponent implements OnInit {
         break;
     }
   }
-  
-  // Helper methods for sub-forms
+
   getPercentageControl(memberId: string) {
     if (!this.percentageForm.contains(memberId)) {
       this.percentageForm.addControl(memberId, this.fb.control(0, [Validators.min(0), Validators.max(100)]));
     }
     return this.percentageForm.get(memberId)!;
   }
-  
+
   getSharesControl(memberId: string) {
     if (!this.sharesForm.contains(memberId)) {
       this.sharesForm.addControl(memberId, this.fb.control(1, [Validators.min(1)]));
     }
     return this.sharesForm.get(memberId)!;
   }
-  
+
   getExactControl(memberId: string) {
     if (!this.exactForm.contains(memberId)) {
       this.exactForm.addControl(memberId, this.fb.control(0, [Validators.min(0)]));
     }
     return this.exactForm.get(memberId)!;
   }
-  
-  // Computed values for sub-forms
+
   totalPercent = computed(() => {
     const values = Object.values(this.percentageForm.value) as number[];
     return values.reduce((acc: number, v: number) => acc + (v || 0), 0);
   });
-  
+
   totalShares = computed(() => {
     const values = Object.values(this.sharesForm.value) as number[];
     return values.reduce((acc: number, v: number) => acc + (v || 0), 0);
   });
-  
+
   totalExactAmount = computed(() => {
     const values = Object.values(this.exactForm.value) as number[];
     return values.reduce((acc: number, v: number) => acc + (v || 0), 0);
   });
-  
-  // Itemized split methods
+
   addItem(): void {
     this.itemsForm.push(this.fb.group({
       id: crypto.randomUUID(),
@@ -690,19 +746,19 @@ export class ExpenseFormComponent implements OnInit {
       assignedTo: [[] as string[], Validators.required],
     }));
   }
-  
+
   removeItem(index: number): void {
     this.itemsForm.removeAt(index);
   }
-  
+
   isItemAssigned(item: FormGroup, memberId: string): boolean {
     return item.get('assignedTo')?.value?.includes(memberId) || false;
   }
-  
+
   getAssignedToValue(item: FormGroup): string {
     return item.get('assignedTo')?.value?.join(',') || '';
   }
-  
+
   toggleItemAssignment(item: FormGroup, memberId: string): void {
     const assigned = item.get('assignedTo')?.value || [];
     const index = assigned.indexOf(memberId);
@@ -712,40 +768,11 @@ export class ExpenseFormComponent implements OnInit {
       item.get('assignedTo')?.setValue([...assigned, memberId]);
     }
   }
-  
-  getItemDescriptionError(item: FormGroup): string {
-    if (item.get('description')?.hasError('required') && item.get('description')?.touched) {
-      return 'Description is required';
-    }
-    return '';
-  }
-  
-  getItemAmountError(item: FormGroup): string {
-    if (item.get('amount')?.hasError('required') && item.get('amount')?.touched) {
-      return 'Amount is required';
-    }
-    if (item.get('amount')?.hasError('min') && item.get('amount')?.touched) {
-      return 'Must be > 0';
-    }
-    return '';
-  }
-  
-  getItemAssignedError(item: FormGroup): string {
-    if (item.get('assignedTo')?.hasError('required') && item.get('assignedTo')?.touched) {
-      return 'At least one participant must be assigned';
-    }
-    return '';
-  }
-  
+
   itemsTotal = computed((): number => {
     return this.itemsForm.controls.reduce((sum: number, control: FormGroup) => sum + (control.get('amount')?.value || 0), 0);
   });
-  
-  getItemsRemaining(): number {
-    return (this.form.get('amount')?.value || 0) - this.itemsTotal();
-  }
-  
-  // Payer methods
+
   togglePayer(memberId: string): void {
     const current = this.payerControl.value || [];
     const index = current.indexOf(memberId);
@@ -755,27 +782,22 @@ export class ExpenseFormComponent implements OnInit {
       this.payerControl.setValue([...current, memberId]);
     }
   }
-  
-  isPayer(memberId: string): boolean {
-    return (this.payerControl.value || []).includes(memberId);
-  }
-  
+
   getPayerIdsString(): string {
     return (this.payerControl.value || []).join(',');
   }
-  
+
   onSubmit(): void {
     if (this.form.invalid || this.submitting() || !this.isValidSplit()) return;
-    
+
     this.submitting.set(true);
-    
+
     const rawForm = this.form.getRawValue();
     const amountMinor = toMinorUnits(rawForm.amount, rawForm.currency);
     const members = this.members();
-    
-    // Build splits based on split type
+
     let splits: ExpenseSplit[] = [];
-    
+
     switch (this.splitType()) {
       case 'equal': {
         const result = splitEqual(amountMinor, members.map(m => m.id), rawForm.currency);
@@ -827,14 +849,13 @@ export class ExpenseFormComponent implements OnInit {
         break;
       }
     }
-    
-    // Build payers
+
     const payerValues = this.payerControl.value || [];
     const payers: ExpensePayer[] = payerValues.map(memberId => ({
       memberId,
       amount: payerValues.length > 0 ? Math.round(amountMinor / payerValues.length) : 0,
     }));
-    
+
     const payload = {
       description: rawForm.description,
       amount: amountMinor,
@@ -861,36 +882,26 @@ export class ExpenseFormComponent implements OnInit {
         };
       }) : undefined,
     };
-    
-    const url = this.isEditing() 
+
+    const url = this.isEditing()
       ? `${environment.apiUrl}/groups/${this.groupId()}/expenses/${this.expenseId()}`
       : `${environment.apiUrl}/groups/${this.groupId()}/expenses`;
     const method = this.isEditing() ? 'patch' : 'post';
-    
+
     this.http[method](url, payload).subscribe({
-      next: (response: any) => {
+      next: () => {
         this.snackBar.open(this.isEditing() ? 'Expense updated' : 'Expense created', 'Dismiss', { duration: 3000 });
         this.router.navigate(['../'], { relativeTo: this.route });
       },
       error: (err) => {
         this.snackBar.open(err.error?.message || 'Failed to save expense', 'Dismiss', { duration: 5000 });
       },
-      complete: () => {
-        this.submitting.set(false);
-      },
+      complete: () => { this.submitting.set(false); },
     });
   }
-  
-  // TrackBy functions for ngFor performance
-  trackByMemberId(index: number, member: Member): string {
-    return member.id;
-  }
 
-  trackByIndex(index: number): number {
-    return index;
-  }
+  trackByMemberId(index: number, member: Member): string { return member.id; }
+  trackByIndex(index: number): number { return index; }
 
-  isSplitTypeSelected(): boolean {
-    return !!this.splitType();
-  }
+  isSplitTypeSelected(): boolean { return !!this.splitType(); }
 }

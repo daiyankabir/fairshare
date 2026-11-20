@@ -38,14 +38,12 @@ export class ThemeService {
   private applyTheme(): void {
     effect(() => {
       const dark = this.isDark();
-      const root = this.document.documentElement;
+      const html = this.document.documentElement;
       
       if (dark) {
-        root.classList.add('dark-theme');
-        root.classList.remove('light-theme');
+        html.setAttribute('data-theme', 'dark');
       } else {
-        root.classList.add('light-theme');
-        root.classList.remove('dark-theme');
+        html.setAttribute('data-theme', 'light');
       }
     });
   }

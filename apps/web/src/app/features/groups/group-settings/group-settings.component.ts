@@ -7,7 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatSelectModule } from '@angular/material/select';
+import { MatSelectModule } from '@angular/material/select'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDividerModule } from '@angular/material/divider';
@@ -15,7 +15,7 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 
 const CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF', 'CNY', 'INR', 'BRL'];
-const EMOJIS = ['🏠', '✈️', '🍕', '🍻', '🎮', '🎓', '💼', '🏖️', '🎂', '🎄', '🏔️', '🏝️', '🚗', '🛒', '💰', '📱'];
+const ICONS = ['groups', 'flight', 'restaurant', 'local_bar', 'sports_esports', 'school', 'work', 'beach_access', 'cake', 'ac_unit', 'terrain', 'island', 'directions_car', 'shopping_cart', 'attach_money', 'smartphone'];
 
 @Component({
   selector: 'app-group-settings',
@@ -25,58 +25,57 @@ const EMOJIS = ['🏠', '✈️', '🍕', '🍻', '🎮', '🎓', '💼', '🏖�
     <div class="settings-container">
       <mat-card class="settings-card">
         <mat-card-header>
-          <mat-card-title>Group Settings</mat-card-title>
-          <mat-card-subtitle>Manage your group details</mat-card-subtitle>
+          <mat-card-title>Group details</mat-card-title>
         </mat-card-header>
-        
+
         <mat-card-content>
           <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form">
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Group Name</mat-label>
+              <mat-label>Group name</mat-label>
               <input matInput formControlName="name" maxlength="100" />
               <mat-icon matPrefix>group</mat-icon>
             </mat-form-field>
-            
+
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Default Currency</mat-label>
+              <mat-label>Default currency</mat-label>
               <mat-select formControlName="defaultCurrency">
                 @for (c of currencies; track c) { <mat-option [value]="c">{{ c }}</mat-option> }
               </mat-select>
               <mat-icon matPrefix>attach_money</mat-icon>
             </mat-form-field>
-            
+
             <div class="field">
-              <label>Cover Emoji</label>
-              <div class="emoji-picker">
-                @for (emoji of emojis; track emoji) {
-                  <button type="button" class="emoji-btn" [class.selected]="form.get('coverEmoji')?.value === emoji" (click)="form.get('coverEmoji')?.setValue(form.get('coverEmoji')?.value === emoji ? '' : emoji)">
-                    {{ emoji }}
+              <label>Cover icon</label>
+              <div class="icon-picker">
+                @for (icon of icons; track icon) {
+                  <button type="button" class="icon-btn" [class.selected]="form.get('coverIcon')?.value === icon" (click)="form.get('coverIcon')?.setValue(form.get('coverIcon')?.value === icon ? '' : icon)">
+                    <mat-icon>{{ icon }}</mat-icon>
                   </button>
                 }
-                <input type="text" formControlName="coverEmoji" class="hidden-input" />
+                <input type="text" formControlName="coverIcon" class="hidden-input" />
               </div>
             </div>
-            
+
             <mat-divider class="section-divider" />
-            
-            <h3>Danger Zone</h3>
+
+            <h3>Danger zone</h3>
             <p class="danger-text">Archive or delete this group. This action cannot be undone.</p>
-            
+
             <div class="danger-actions">
               <button mat-stroked-button color="warn" type="button" (click)="archiveGroup()">
                 <mat-icon>archive</mat-icon>
-                Archive Group
+                Archive group
               </button>
               <button mat-stroked-button color="warn" type="button" (click)="deleteGroup()" class="delete-btn">
                 <mat-icon>delete_forever</mat-icon>
-                Delete Group
+                Delete group
               </button>
             </div>
-            
+
             <div class="form-actions">
               <button mat-button type="button" routerLink="../">Cancel</button>
               <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || submitting()">
-                @if (submitting()) { <mat-spinner diameter="20"></mat-spinner> } @else { Save Changes }
+                @if (submitting()) { <mat-spinner diameter="20"></mat-spinner> } @else { Save changes }
               </button>
             </div>
           </form>
@@ -85,22 +84,51 @@ const EMOJIS = ['🏠', '✈️', '🍕', '🍻', '🎮', '🎓', '💼', '🏖�
     </div>
   `,
   styles: [`
-    .settings-container { display: flex; align-items: flex-start; justify-content: center; min-height: 100vh; padding: 48px 24px; }
-    .settings-card { width: 100%; max-width: 600px; }
-    .form { display: flex; flex-direction: column; gap: 20px; margin-top: 8px; }
+    .settings-container { display: flex; align-items: flex-start; justify-content: center; min-height: 100vh; padding: var(--space-8) var(--space-4); }
+    .settings-card { width: 100%; max-width: 640px; box-shadow: none; border: 1px solid var(--border-hairline); }
+    .form { display: flex; flex-direction: column; gap: var(--space-5); margin-top: var(--space-2); }
     .full-width { width: 100%; }
-    .field { display: flex; flex-direction: column; gap: 8px; }
-    .field label { font-size: 14px; font-weight: 500; color: var(--mat-sys-on-surface-variant); }
-    .emoji-picker { display: flex; flex-wrap: wrap; gap: 8px; }
-    .emoji-btn { width: 48px; height: 48px; border: 2px solid var(--mat-sys-outline-variant); border-radius: 12px; background: var(--mat-sys-surface-container-low); font-size: 24px; cursor: pointer; transition: all 0.2s; }
-    .emoji-btn:hover { border-color: var(--mat-sys-primary); transform: scale(1.05); }
-    .emoji-btn.selected { border-color: var(--mat-sys-primary); background: var(--mat-sys-primary-container); }
+
+    .field { display: flex; flex-direction: column; gap: var(--space-2); }
+    .field label { font-size: 13px; font-weight: 500; color: var(--text-secondary); }
+
+    .icon-picker { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+    .icon-btn {
+      width: 48px; height: 48px;
+      border: 1px solid var(--border-hairline); border-radius: var(--radius-md);
+      background: var(--bg-raised); font-size: 22px; cursor: pointer;
+      transition: border-color 160ms, background 160ms;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-secondary);
+
+      &:hover { border-color: var(--accent); background: var(--bg-card); }
+      &.selected { border-color: var(--accent); background: var(--accent-container); color: var(--accent-on-container); }
+    }
+
     .hidden-input { display: none; }
-    .section-divider { margin: 24px 0; }
-    .danger-text { margin: 0 0 16px; color: var(--mat-sys-on-surface-variant); font-size: 14px; }
-    .danger-actions { display: flex; gap: 12px; }
-    .delete-btn { color: var(--mat-sys-error); border-color: var(--mat-sys-error); }
-    .form-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 8px; padding-top: 8px; }
+
+    .section-divider { margin: var(--space-6) 0; }
+
+    .danger-text { margin: 0 0 var(--space-4); color: var(--text-secondary); font-size: 14px; line-height: 1.5; }
+
+    .danger-actions { display: flex; gap: var(--space-3); }
+
+    .delete-btn { color: var(--error); border-color: var(--error); }
+
+    .form-actions {
+      display: flex; justify-content: flex-end; gap: var(--space-3);
+      margin-top: var(--space-3); padding-top: var(--space-4);
+      border-top: 1px solid var(--border-hairline);
+    }
+
+    @media (max-width: 599px) {
+      .settings-container { padding: var(--space-6) var(--space-3); align-items: stretch; }
+      .settings-card { max-width: none; }
+      .danger-actions { flex-direction: column; }
+      .danger-actions button { width: 100%; }
+      .form-actions { flex-direction: column-reverse; }
+      .form-actions button { width: 100%; }
+    }
   `]
 })
 export class GroupSettingsComponent {
@@ -109,27 +137,27 @@ export class GroupSettingsComponent {
   private router = inject(Router);
   private http = inject(HttpClient);
   private snackBar = inject(MatSnackBar);
-  
+
   currencies = CURRENCIES;
-  emojis = EMOJIS;
+  icons = ICONS;
   submitting = signal(false);
   groupId = signal<string>('');
-  
+
   form = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(100)]],
     defaultCurrency: ['USD', Validators.required],
-    coverEmoji: ['']
+    coverIcon: ['']
   });
-  
+
   ngOnInit(): void {
     this.groupId.set(this.route.snapshot.paramMap.get('id') || '');
     this.loadGroup();
   }
-  
+
   async loadGroup(): Promise<void> {
     // placeholder
   }
-  
+
   async onSubmit(): Promise<void> {
     if (this.form.invalid) return;
     this.submitting.set(true);
@@ -137,16 +165,14 @@ export class GroupSettingsComponent {
       this.snackBar.open('Settings saved', 'Dismiss', { duration: 3000 });
     } catch (err) {
       this.snackBar.open('Failed to save', 'Dismiss', { duration: 5000 });
-    } finally {
-      this.submitting.set(false);
-    }
+    } finally { this.submitting.set(false); }
   }
-  
+
   async archiveGroup(): Promise<void> {
     if (!confirm('Archive this group?')) return;
     this.snackBar.open('Group archived', 'Dismiss', { duration: 3000 });
   }
-  
+
   async deleteGroup(): Promise<void> {
     if (!confirm('Delete this group? This cannot be undone!')) return;
     this.snackBar.open('Group deleted', 'Dismiss', { duration: 3000 });

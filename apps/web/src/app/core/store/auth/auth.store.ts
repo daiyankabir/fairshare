@@ -33,6 +33,9 @@ export class AuthStore {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
   
+  // Demo mode - set to true when backend is unavailable
+  readonly demoMode = signal(true);
+  
   readonly #state = signal<AuthState>(this.loadInitialState());
   
   readonly user = computed(() => this.#state().user);
@@ -86,6 +89,31 @@ export class AuthStore {
   login(email: string, password: string): void {
     this.updateState({ isLoading: true, error: null });
     
+    if (this.demoMode()) {
+      // Demo mode - simulate successful login
+      setTimeout(() => {
+        const user: User = {
+          id: 'demo-user-1',
+          email,
+          name: email.split('@')[0],
+          defaultCurrency: 'USD',
+          avatarColor: '#1976d2'
+        };
+        const token = 'demo-token-' + Date.now();
+        localStorage.setItem('auth_token', token);
+        localStorage.setItem('auth_user', JSON.stringify(user));
+        this.updateState({
+          user,
+          token,
+          isAuthenticated: true,
+          isLoading: false,
+          error: null
+        });
+        this.router.navigate(['/groups']);
+      }, 800);
+      return;
+    }
+    
     this.http.post<{ user: User; token: string }>(`${environment.apiUrl}/auth/login`, { email, password })
       .pipe(
         tap(response => {
@@ -114,6 +142,31 @@ export class AuthStore {
   register(email: string, password: string, name: string): void {
     this.updateState({ isLoading: true, error: null });
     
+    if (this.demoMode()) {
+      // Demo mode - simulate successful registration
+      setTimeout(() => {
+        const user: User = {
+          id: 'demo-user-' + Date.now(),
+          email,
+          name,
+          defaultCurrency: 'USD',
+          avatarColor: '#1976d2'
+        };
+        const token = 'demo-token-' + Date.now();
+        localStorage.setItem('auth_token', token);
+        localStorage.setItem('auth_user', JSON.stringify(user));
+        this.updateState({
+          user,
+          token,
+          isAuthenticated: true,
+          isLoading: false,
+          error: null
+        });
+        this.router.navigate(['/groups']);
+      }, 800);
+      return;
+    }
+    
     this.http.post<{ user: User; token: string }>(`${environment.apiUrl}/auth/register`, { email, password, name })
       .pipe(
         tap(response => {
@@ -141,6 +194,30 @@ export class AuthStore {
   
   claimGuestAccount(email: string, password: string, guestToken: string): void {
     this.updateState({ isLoading: true, error: null });
+    
+    if (this.demoMode()) {
+      setTimeout(() => {
+        const user: User = {
+          id: 'demo-user-' + Date.now(),
+          email,
+          name: email.split('@')[0],
+          defaultCurrency: 'USD',
+          avatarColor: '#1976d2'
+        };
+        const token = 'demo-token-' + Date.now();
+        localStorage.setItem('auth_token', token);
+        localStorage.setItem('auth_user', JSON.stringify(user));
+        this.updateState({
+          user,
+          token,
+          isAuthenticated: true,
+          isLoading: false,
+          error: null
+        });
+        this.router.navigate(['/groups']);
+      }, 800);
+      return;
+    }
     
     this.http.post<{ user: User; token: string }>(`${environment.apiUrl}/auth/claim-guest`, { email, password, guestToken })
       .pipe(

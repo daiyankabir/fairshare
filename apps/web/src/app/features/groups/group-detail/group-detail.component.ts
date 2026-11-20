@@ -33,15 +33,44 @@ import { MatIconModule } from '@angular/material/icon';
   `,
   styles: [`
     .group-detail { height: 100%; display: flex; flex-direction: column; }
-    .group-header { display: flex; flex-direction: column; gap: 16px; padding: 16px 0; }
-    .group-info { display: flex; align-items: baseline; gap: 12px; }
-    .group-info h1 { margin: 0; font-size: 24px; font-weight: 600; }
-    .currency { font-size: 14px; color: var(--mat-sys-on-surface-variant); padding: 4px 12px; background: var(--mat-sys-surface-container-high); border-radius: 16px; }
-    .tab-nav { border-bottom: 1px solid var(--mat-sys-outline-variant); }
-    .tab-content { flex: 1; padding: 16px 0; }
+
+    .group-header {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+      padding: var(--space-4) 0;
+    }
+
+    .group-info { display: flex; align-items: baseline; gap: var(--space-3); }
+
+    .group-info h1 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 500;
+      letter-spacing: -0.02em;
+    }
+
+    .currency {
+      font-size: 13px;
+      color: var(--text-secondary);
+      padding: var(--space-1) var(--space-3);
+      background: var(--bg-raised);
+      border-radius: var(--radius-sm);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .tab-nav { border-bottom: 1px solid var(--border-hairline); }
+
+    .tab-content { flex: 1; padding: var(--space-4) 0; }
+
+    @media (max-width: 599px) {
+      .group-header { padding: var(--space-3) 0; gap: var(--space-3); }
+      .group-info h1 { font-size: 18px; }
+      .currency { font-size: 12px; padding: var(--space-1) var(--space-2); }
+    }
   `]
 })
 export class GroupDetailComponent {
-  groupName = signal('Loading...');
+  groupName = signal('Loading…');
   groupCurrency = signal('USD');
 }
